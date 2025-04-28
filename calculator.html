@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Scientific Calculator</title>
+    <link rel="stylesheet" href="calculator.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="calculator" role="application" aria-label="Scientific Calculator">
+            <div class="display-container">
+                <div class="display" id="display" aria-live="polite">0</div>
+                <div class="voice-status" id="voiceStatus" aria-live="assertive">
+                    <i class="fas fa-microphone"></i>
+                    <span>Click mic or say "Calculate"</span>
+                </div>
+            </div>
+            
+            <div class="mode-switch">
+                <button class="mode-button" id="modeToggle" aria-label="Switch to Scientific mode">Basic Mode</button>
+            </div>
+            
+            <div class="tab-content" id="basicCalculator" role="tabpanel" aria-label="Basic Calculator">
+                <div class="buttons">
+                    <button class="btn function" onclick="clearDisplay()" aria-label="Clear display">Clear</button>
+                    <button class="btn function" onclick="toggleSign()" aria-label="Toggle sign">±</button>
+                    <button class="btn function" onclick="percentage()" aria-label="Percentage">%</button>
+                    <button class="btn operator" onclick="chooseOperation('/')" aria-label="Divide">÷</button>
+                    
+                    <button class="btn number" onclick="appendToDisplay('7')" aria-label="Seven">7</button>
+                    <button class="btn number" onclick="appendToDisplay('8')" aria-label="Eight">8</button>
+                    <button class="btn number" onclick="appendToDisplay('9')" aria-label="Nine">9</button>
+                    <button class="btn operator" onclick="chooseOperation('*')" aria-label="Multiply">×</button>
+                    
+                    <button class="btn number" onclick="appendToDisplay('4')" aria-label="Four">4</button>
+                    <button class="btn number" onclick="appendToDisplay('5')" aria-label="Five">5</button>
+                    <button class="btn number" onclick="appendToDisplay('6')" aria-label="Six">6</button>
+                    <button class="btn operator" onclick="chooseOperation('-')" aria-label="Subtract">-</button>
+                    
+                    <button class="btn number" onclick="appendToDisplay('1')" aria-label="One">1</button>
+                    <button class="btn number" onclick="appendToDisplay('2')" aria-label="Two">2</button>
+                    <button class="btn number" onclick="appendToDisplay('3')" aria-label="Three">3</button>
+                    <button class="btn operator" onclick="chooseOperation('+')" aria-label="Add">+</button>
+                    
+                    <button class="btn number zero" onclick="appendToDisplay('0')" aria-label="Zero">0</button>
+                    <button class="btn number" onclick="appendToDisplay('.')" aria-label="Decimal point">.</button>
+                    <button class="btn equals" onclick="calculate()" aria-label="Calculate">=</button>
+                </div>
+            </div>
+            
+            <div class="tab-content hidden" id="scientificCalculator" role="tabpanel" aria-label="Scientific Calculator">
+                <div class="buttons">
+                    <button class="btn function" onclick="clearDisplay()" aria-label="Clear display">CE</button>
+                    <button class="btn function" onclick="calculateFunction('Math.sin')" aria-label="Sine">sin</button>
+                    <button class="btn function" onclick="calculateFunction('Math.cos')" aria-label="Cosine">cos</button>
+                    <button class="btn function" onclick="calculateFunction('Math.tan')" aria-label="Tangent">tan</button>
+                    
+                    <button class="btn function" onclick="calculateFunction('Math.log')" aria-label="Natural logarithm">ln</button>
+                    <button class="btn function" onclick="calculateFunction('Math.log10')" aria-label="Logarithm base 10">log</button>
+                    <button class="btn function" onclick="calculateFunction('Math.sqrt')" aria-label="Square root">√</button>
+                    <button class="btn operator" onclick="chooseOperation('/')" aria-label="Divide">÷</button>
+                    
+                    <button class="btn number" onclick="appendToDisplay('7')" aria-label="Seven">7</button>
+                    <button class="btn number" onclick="appendToDisplay('8')" aria-label="Eight">8</button>
+                    <button class="btn number" onclick="appendToDisplay('9')" aria-label="Nine">9</button>
+                    <button class="btn operator" onclick="chooseOperation('*')" aria-label="Multiply">×</button>
+                    
+                    <button class="btn number" onclick="appendToDisplay('4')" aria-label="Four">4</button>
+                    <button class="btn number" onclick="appendToDisplay('5')" aria-label="Five">5</button>
+                    <button class="btn number" onclick="appendToDisplay('6')" aria-label="Six">6</button>
+                    <button class="btn operator" onclick="chooseOperation('-')" aria-label="Subtract">-</button>
+                    
+                    <button class="btn number" onclick="appendToDisplay('1')" aria-label="One">1</button>
+                    <button class="btn number" onclick="appendToDisplay('2')" aria-label="Two">2</button>
+                    <button class="btn number" onclick="appendToDisplay('3')" aria-label="Three">3</button>
+                    <button class="btn operator" onclick="chooseOperation('+')" aria-label="Add">+</button>
+                    
+                    <button class="btn number zero" onclick="appendToDisplay('0')" aria-label="Zero">0</button>
+                    <button class="btn number" onclick="appendToDisplay('.')" aria-label="Decimal point">.</button>
+                    <button class="btn equals" onclick="calculate()" aria-label="Calculate">=</button>
+                </div>
+            </div>
+            
+            <div class="history-section hidden" id="historyPanel">
+                <div class="history-list" id="historyList" aria-label="Calculation history">
+                    <!-- History items will be added here dynamically -->
+                </div>
+                <button class="btn clear-history" onclick="clearHistory()" aria-label="Clear history">Clear History</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="calculator.js"></script>
+    <script src="voice.js"></script>
+</body>
+</html>
