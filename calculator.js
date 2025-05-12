@@ -1,5 +1,4 @@
 let currentInput = '0';
-let previousInput = '';
 let operation = null;
 let resetInput = false;
 let calculationHistory = [];
@@ -44,7 +43,7 @@ function setupModeSwitching() {
             basicCalculator.classList.remove('hidden');
             scientificCalculator.classList.add('hidden');
         }
-        historyPanel.classList.add('hidden'); // Hide history when switching modes
+        historyPanel.classList.add('hidden');
     });
 }
 
@@ -55,27 +54,21 @@ function updateDisplay() {
 
 function appendToDisplay(value) {
     if (currentInput === '0' || resetInput) {
-        currentInput = '';
+        currentInput = value;
         resetInput = false;
+    } else {
+        currentInput += value;
     }
     
     if (value === 'Math.PI') {
         currentInput = Math.PI.toString();
-        updateDisplay();
-        return;
     }
     
-    if (value === '.' && currentInput.includes('.')) return;
-    
-    if (['+', '*', '/'].includes(value) && currentInput === '' && previousInput === '') return;
-    
-    currentInput += value;
     updateDisplay();
 }
 
 function clearDisplay() {
     currentInput = '0';
-    previousInput = '';
     operation = null;
     updateDisplay();
 }
@@ -89,78 +82,41 @@ function backspace() {
     updateDisplay();
 }
 
-function toggleSign() {
-    if (currentInput === '0') return;
-    currentInput = currentInput.startsWith('-') ? currentInput.slice(1) : '-' + currentInput;
-    updateDisplay();
-}
-
 function chooseOperation(op) {
-    if (currentInput === '' && previousInput === '') return;
-    
-    if (currentInput !== '' && previousInput !== '') {
-        calculate();
-    }
+    if (currentInput === '') return;
     
     operation = op;
-    previousInput = currentInput;
-    currentInput = '';
+    currentInput += op;
     resetInput = false;
+    updateDisplay();
 }
 
 function calculate() {
-    let computation;
-    const prev = parseFloat(previousInput);
-    const current = parseFloat(currentInput);
-    
-    if (isNaN(prev) && previousInput !== '' || isNaN(current) && currentInput !== '') {
-        displayError("Invalid input");
-        return;
-    }
-    
-    if (operation === null && currentInput !== '') {
-        currentInput = current.toString();
-        return;
-    }
-    
-    switch (operation) {
-        case '+':
-            computation = prev + current;
-            break;
-        case '-':
-            computation = prev - current;
-            break;
-        case '*':
-            computation = prev * current;
-            break;
-        case '/':
-            if (current === 0) {
-                displayError("Cannot divide by zero");
-                return;
-            }
-            computation = prev / current;
-            break;
-        case '^':
-            computation = Math.pow(prev, current);
-            break;
-        default:
+    try {
+        let expression = currentInput.replace(/Math\.PI/g, Math.PI);
+        let result = eval(expression);
+        
+        if (isNaN(result) || !isFinite(result)) {
+            displayError("Invalid result");
             return;
+        }
+        
+        result = formatResult(result);
+        
+        const historyItem = {
+            expression: currentInput,
+            result: result
+        };
+        
+        addToHistory(historyItem);
+        
+        currentInput = result;
+        operation = null;
+        resetInput = true;
+        updateDisplay();
+    } catch (e) {
+        displayError("Calculation error");
     }
-    
-    let result = formatResult(computation);
-    
-    const historyItem = {
-        expression: formatExpression(previousInput, operation, currentInput),
-        result: result
-    };
-    
-    addToHistory(historyItem);
-    
-    currentInput = result;
-    operation = null;
-    previousInput = '';
-    resetInput = true;
-    updateDisplay();
 }
 
 function calculateFunction(func) {
@@ -207,9 +163,6 @@ function calculateFunction(func) {
                 }
                 computation = Math.sqrt(value);
                 break;
-            case 'Math.exp':
-                computation = Math.exp(value);
-                break;
             default:
                 return;
         }
@@ -231,152 +184,6 @@ function calculateFunction(func) {
     }
 }
 
-function powerFunction() {
-    previousInput = currentInput;
-    currentInput = '';
-    operation = '^';
-    updateDisplay();
-}
-
-function factorial() {
-    try {
-        const num = parseInt(currentInput);
-        if (isNaN(num) || num < 0) {
-            displayError("Factorial: x must be non-negative integer");
-            return;
-        }
-        
-        let result = 1;
-        for (let i = 2; i <= num; i++) {
-            result *= i;
-        }
-        
-        const historyItem = {
-            expression: `${currentInput}!`,
-            result: result.toString()
-        };
-        
-        addToHistory(historyItem);
-        
-        currentInput = result.toString();
-        resetInput = true;
-        updateDisplay();
-    } catch (e) {
-        displayError("Factorial error");
-    }
-}
-
-function percentage() {
-    try {
-        const value = parseFloat(currentInput);
-        if (isNaN(value)) {
-            displayError("Invalid number");
-            return;
-        }
-        
-        const result = value / 100;
-        
-        const historyItem = {
-            expression: `${currentInput}%`,
-            result: result.toString()
-        };
-        
-        addToHistory(historyItem);
-        
-        currentInput = result.toString();
-        resetInput = true;
-        updateDisplay();
-    } catch (e) {
-        displayError("Percentage error");
-    }
-}
-
-function square() {
-    try {
-        const value = parseFloat(currentInput);
-        if (isNaN(value)) {
-            displayError("Invalid number");
-            return;
-        }
-        
-        const result = value * value;
-        
-        const historyItem = {
-            expression: `${currentInput}²`,
-            result: result.toString()
-        };
-        
-        addToHistory(historyItem);
-        
-        currentInput = result.toString();
-        resetInput = true;
-        updateDisplay();
-    } catch (e) {
-        displayError("Square error");
-    }
-}
-
-function tenPower() {
-    try {
-        const value = parseFloat(currentInput);
-        if (isNaN(value)) {
-            displayError("Invalid number");
-            return;
-        }
-        
-        const result = Math.pow(10, value);
-        
-        const historyItem = {
-            expression: `10^${currentInput}`,
-            result: result.toString()
-        };
-        
-        addToHistory(historyItem);
-        
-        currentInput = result.toString();
-        resetInput = true;
-        updateDisplay();
-    } catch (e) {
-        displayError("Power error");
-    }
-}
-
-function memoryAdd() {
-    try {
-        const value = parseFloat(currentInput);
-        if (!isNaN(value)) {
-            memory += value;
-        }
-    } catch (e) {
-        displayError("Memory add error");
-    }
-}
-
-function memorySubtract() {
-    try {
-        const value = parseFloat(currentInput);
-        if (!isNaN(value)) {
-            memory -= value;
-        }
-    } catch (e) {
-        displayError("Memory subtract error");
-    }
-}
-
-function memoryRecall() {
-    currentInput = memory.toString();
-    resetInput = false;
-    updateDisplay();
-}
-
-function memoryClear() {
-    memory = 0;
-}
-
-function toggleAngleMode() {
-    angleMode = angleMode === 'radians' ? 'degrees' : 'radians';
-}
-
 function formatResult(computation) {
     if (isNaN(computation) || !isFinite(computation)) {
         throw new Error("Invalid result");
@@ -385,12 +192,6 @@ function formatResult(computation) {
         return computation.toString();
     }
     return parseFloat(computation.toFixed(10)).toString();
-}
-
-function formatExpression(prev, op, curr) {
-    if (!op) return curr;
-    if (op === '^') return `${prev}^${curr}`;
-    return `${prev} ${op} ${curr}`;
 }
 
 function addToHistory(historyItem) {
@@ -461,13 +262,12 @@ function setupKeyboardInput() {
         const key = event.key;
         if ((key >= '0' && key <= '9') || 
             key === '.' || 
-            ['+', '-', '*', '/', '(', ')', '%', '^', '!'].includes(key) ||
+            ['+', '-', '*', '/', '(', ')', '%'].includes(key) ||
             ['Enter', '=', 'Escape', 'Backspace'].includes(key) ||
-            (isScientific && ['s', 'c', 't', 'l', 'r', 'e'].includes(key.toLowerCase()))) {
+            (isScientific && ['s', 'c', 't', 'l', 'r'].includes(key.toLowerCase()))) {
             event.preventDefault();
         }
 
-        // Number input (including multi-digit)
         if (key >= '0' && key <= '9') {
             appendToDisplay(key);
         } else if (key === '.') {
@@ -480,12 +280,8 @@ function setupKeyboardInput() {
             chooseOperation('*');
         } else if (key === '/') {
             chooseOperation('/');
-        } else if (key === '^') {
-            powerFunction();
-        } else if (key === '%' || key === 'Shift') {
-            percentage();
-        } else if (key === '!') {
-            factorial();
+        } else if (key === '%') {
+            appendToDisplay('%');
         } else if (key === 'Enter' || key === '=') {
             calculate();
         } else if (key === 'Escape') {
@@ -503,8 +299,6 @@ function setupKeyboardInput() {
                 calculateFunction('Math.log');
             } else if (key.toLowerCase() === 'r') {
                 calculateFunction('Math.sqrt');
-            } else if (key.toLowerCase() === 'e') {
-                calculateFunction('Math.exp');
             }
         }
     });

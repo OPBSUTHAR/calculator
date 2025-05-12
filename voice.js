@@ -41,11 +41,6 @@ const voiceCommands = {
     'divide': '/',
     'divided by': '/',
     'over': '/',
-    'modulo': '%',
-    'percent': '%',
-    'power': '^',
-    'to the power of': '^',
-    'factorial': '!',
     'equals': '=',
     'equal': '=',
     'clear': 'AC',
@@ -63,15 +58,7 @@ const voiceCommands = {
     'log': 'log',
     'natural log': 'ln',
     'square root': '√',
-    'root': '√',
-    'degrees': 'deg',
-    'degree': 'deg',
-    'radians': 'rad',
-    'radian': 'rad',
-    'memory plus': 'M+',
-    'memory minus': 'M-',
-    'memory recall': 'MR',
-    'memory clear': 'MC'
+    'root': '√'
 };
 
 voiceStatus.addEventListener('click', toggleVoiceRecognition);
@@ -85,14 +72,19 @@ function toggleVoiceRecognition() {
 }
 
 function startVoiceRecognition() {
-    recognition.start();
-    voiceStatus.classList.add('listening');
-    voiceStatus.innerHTML = '<i class="fas fa-microphone"></i> Listening for commands...';
-    isListening = true;
-    
-    recognitionTimeout = setTimeout(() => {
-        stopVoiceRecognition();
-    }, 10000);
+    try {
+        recognition.start();
+        voiceStatus.classList.add('listening');
+        voiceStatus.innerHTML = '<i class="fas fa-microphone"></i> Listening for commands...';
+        isListening = true;
+        
+        recognitionTimeout = setTimeout(() => {
+            stopVoiceRecognition();
+        }, 10000);
+    } catch (e) {
+        console.error('Error starting voice recognition:', e);
+        displayError("Failed to start voice recognition");
+    }
 }
 
 function stopVoiceRecognition() {
@@ -113,7 +105,7 @@ recognition.onresult = function(event) {
 };
 
 recognition.onerror = function(event) {
-    console.error('Voice recognition error', event.error);
+    console.error('Voice recognition error:', event.error);
     stopVoiceRecognition();
     
     let message = "Voice recognition failed";
@@ -129,7 +121,12 @@ recognition.onerror = function(event) {
 
 recognition.onend = function() {
     if (isListening) {
-        recognition.start();
+        try {
+            recognition.start();
+        } catch (e) {
+            console.error('Error restarting voice recognition:', e);
+            stopVoiceRecognition();
+        }
     }
 };
 
@@ -152,16 +149,9 @@ function processVoiceCommand(command) {
     
     const words = processedCommand.split(' ');
     let result = [];
-    let isDegreeMode = false;
     
     for (let i = 0; i < words.length; i++) {
         if (voiceCommands[words[i]]) {
-            if (words[i] === 'deg') {
-                isDegreeMode = true;
-                continue;
-            } else if (words[i] === 'rad') {
-                continue;
-            }
             result.push(voiceCommands[words[i]]);
         } else {
             result.push(words[i]);
@@ -179,47 +169,26 @@ function processVoiceCommand(command) {
         calculate();
         stopVoiceRecognition();
     } else if (processedCommand === 'sin' || processedCommand === 'sine') {
-        if (isDegreeMode) toggleAngleMode();
         calculateFunction('Math.sin');
-        if (isDegreeMode) toggleAngleMode();
     } else if (processedCommand === 'cos' || processedCommand === 'cosine') {
-        if (isDegreeMode) toggleAngleMode();
         calculateFunction('Math.cos');
-        if (isDegreeMode) toggleAngleMode();
     } else if (processedCommand === 'tan' || processedCommand === 'tangent') {
-        if (isDegreeMode) toggleAngleMode();
         calculateFunction('Math.tan');
-        if (isDegreeMode) toggleAngleMode();
     } else if (processedCommand === 'ln' || processedCommand === 'natural log') {
         calculateFunction('Math.log');
     } else if (processedCommand === 'log') {
         calculateFunction('Math.log10');
     } else if (processedCommand === '√' || processedCommand === 'square root' || processedCommand === 'root') {
         calculateFunction('Math.sqrt');
-    } else if (processedCommand === '!') {
-        factorial();
-    } else if (processedCommand === '%') {
-        percentage();
-    } else if (processedCommand === '^') {
-        powerFunction();
     } else if (processedCommand === 'Math.PI' || processedCommand === 'pi') {
         appendToDisplay('Math.PI');
-    } else if (processedCommand === 'M+') {
-        memoryAdd();
-    } else if (processedCommand === 'M-') {
-        memorySubtract();
-    } else if (processedCommand === 'MR') {
-        memoryRecall();
-    } else if (processedCommand === 'MC') {
-        memoryClear();
     } else {
         const validChars = processedCommand.split('').filter(c => 
-            /[0-9+\-*/.^!%()]/.test(c) || c === '.' || c === 'Math.PI'
+            /[0-9+\-*/.()]/.test(c) || c === '.' || c === 'Math.PI'
         ).join('');
         
         if (validChars) {
-            currentInput = currentInput === '0' ? validChars : currentInput + validChars;
-            updateDisplay();
+            appendToDisplay(validChars);
         } else {
             displayError("Unrecognized command");
         }
